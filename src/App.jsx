@@ -1,11 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 function App() {
 
   const[input, setInput]=useState("");
 
-  const[tasks, setTasks]=useState([]);
+  const[tasks, setTasks]=useState(()=>{
+    const savedToDo=localStorage.getItem("todos");
+    return savedToDo?JSON.parse(savedToDo):[];
+  });
+
+  useEffect(()=>{
+    localStorage.setItem("todos",JSON.stringify(tasks));
+  },[tasks])
 
   function handleAddTodo(){
 
@@ -13,7 +20,7 @@ function App() {
       return;
     }
     const item={
-      id:tasks.length+1,
+      id:Date.now(),
       task:input.trim(),
       completed:false      
     }
@@ -47,14 +54,34 @@ function App() {
 
   return(
     <>
-      <input type='text' placeholder='Write your TODO' value={input} onChange={(e)=>setInput(e.target.value)}></input>
-      <button onClick={()=>handleAddTodo()}>Add</button>
+      <input 
+        type='text' 
+        placeholder='Write your TODO' 
+        value={input} 
+        onChange={(e)=>setInput(e.target.value)}
+        onKeyDown={(e)=>{
+          if(e.key==='Enter'){
+            handleAddTodo();
+          }
+        }}
+      >
+
+      </input>
+      <button  disabled={!input.trim()} onClick={()=>handleAddTodo()}>Add</button>
 
       <ul>
         {tasks.map((t)=>
           <li key={t.id}>
-            <input type='checkbox' onChange={()=>toggleTask(t.id)}></input>
-            <span className={t.completed ?'strike': ""}>{t.task}</span>
+            <input 
+              type='checkbox' 
+              checked={t.completed}
+              onChange={()=>toggleTask(t.id)}
+            >
+
+            </input>
+            <span 
+              className={t.completed ?'strike': ""}
+            >{t.task}</span>
             <button onClick={()=>deleteTodo(t.id)}>Delete</button>
           </li>
         )}
