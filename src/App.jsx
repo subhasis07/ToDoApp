@@ -10,6 +10,10 @@ function App() {
     return savedToDo?JSON.parse(savedToDo):[];
   });
 
+  const [editId, setEditId] = useState(null);
+  const [editText, setEditText] = useState('');
+
+
   useEffect(()=>{
     localStorage.setItem("todos",JSON.stringify(tasks));
   },[tasks])
@@ -52,6 +56,22 @@ function App() {
     )
   }
 
+  function editTask(task){
+    setEditId(task.id);
+    setEditText(task.task);
+  }
+
+  function saveTask(id){
+    setTasks((prev)=>
+      prev.map((t)=>
+        t.id===id?{...t,task:editText.trim()}:t
+      )
+    )
+
+    setEditId(null);
+    setEditText("")
+  }
+
   return(
     <>
       <input 
@@ -79,10 +99,22 @@ function App() {
             >
 
             </input>
-            <span 
-              className={t.completed ?'strike': ""}
-            >{t.task}</span>
-            <button onClick={()=>deleteTodo(t.id)}>Delete</button>
+            {(editId ==t.id) ? (
+              <>  
+                <input type='text' value={editText} onChange={(e)=>setEditText(e.target.value)}/>
+                <button onClick={()=>saveTask(t.id)}>Save</button>
+                <button onClick={()=>setEditId(null)}>Cancel</button>
+              </>
+            ):
+              (
+                <>
+                  <span className={t.completed ?'strike': ""}>{t.task}</span>
+                  <button onClick={()=>editTask(t)}>Edit</button>
+                  <button onClick={()=>deleteTodo(t.id)}>Delete</button>
+                  
+                </>
+              )
+            } 
           </li>
         )}
       </ul>
